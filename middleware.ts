@@ -69,8 +69,8 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Protect /account routes
-  if (url.pathname.startsWith('/account')) {
+  // Protect /account and /checkout routes
+  if (url.pathname.startsWith('/account') || url.pathname.startsWith('/checkout')) {
     if (!user) {
       url.pathname = '/login'
       return NextResponse.redirect(url)
