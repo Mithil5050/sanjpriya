@@ -58,7 +58,7 @@ export default function HomePage() {
   const heroRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    fetch('/api/products?featured=true&limit=8')
+    fetch('/api/products?limit=20')
       .then(r => r.json())
       .then(d => setFeaturedProducts(d.products || []));
   }, []);
@@ -173,8 +173,8 @@ export default function HomePage() {
       <section className="section" style={{ background: 'var(--surface-cream)' }}>
         <div className="container">
           <div className="section-header">
-            <span className="overline">Handpicked for You</span>
-            <h2>Featured Pieces</h2>
+            <span className="overline">Discover Our Range</span>
+            <h2>New Arrivals</h2>
             <p>Our most loved styles — celebrated by women across India.</p>
           </div>
           {featuredProducts.length > 0 ? (
