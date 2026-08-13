@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Product } from '@/lib/types';
 import { useCart } from './CartProvider';
 import { useToast } from './ToastProvider';
+import WishlistButton from './WishlistButton';
 
 interface ProductCardProps {
   product: Product;
@@ -13,8 +14,6 @@ interface ProductCardProps {
 export default function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCart();
   const { showToast } = useToast();
-  const [wishlisted, setWishlisted] = useState(false);
-
   const discount = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0;
@@ -35,13 +34,6 @@ export default function ProductCard({ product }: ProductCardProps) {
       slug: product.slug,
     });
     showToast(`${product.name} added to cart!`);
-  };
-
-  const handleWishlist = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setWishlisted(w => !w);
-    showToast(wishlisted ? 'Removed from wishlist' : 'Added to wishlist ♥', 'info');
   };
 
   const imageUrl = product.images[0] || `https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600`;
@@ -66,7 +58,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         {/* Discount badge */}
         {discount > 0 && (
-          <div className="product-card-badge" style={{ top: product.badge ? 44 : 12 }}>
+          <div className="product-card-badge" style={{ top: product.badge ? '44px' : '12px' }}>
             <span className="badge" style={{ background: 'rgba(37,25,23,0.85)', color: 'white' }}>
               -{discount}%
             </span>
@@ -74,15 +66,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         )}
 
         {/* Wishlist */}
-        <button
-          className="product-card-wishlist"
-          onClick={handleWishlist}
-          aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill={wishlisted ? '#E5097F' : 'none'} stroke="#E5097F" strokeWidth="2">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-          </svg>
-        </button>
+        <WishlistButton productId={product.id} />
 
         {/* Quick Add */}
         <button className="product-card-quick-add" onClick={handleQuickAdd}>
