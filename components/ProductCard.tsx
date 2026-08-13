@@ -84,12 +84,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             <span className="original">₹{product.originalPrice.toLocaleString('en-IN')}</span>
           )}
         </div>
-        <div className="product-card-rating">
-          <span className="stars" style={{ color: 'var(--heritage-gold)', fontSize: 12 }}>
-            {'★'.repeat(Math.round(product.rating))}{'☆'.repeat(5 - Math.round(product.rating))}
-          </span>
-          <span className="count" style={{ fontSize: 11, color: 'var(--outline)' }}>({product.reviewCount})</span>
-        </div>
+
       </div>
     </div>
   );

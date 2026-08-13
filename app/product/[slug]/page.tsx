@@ -139,12 +139,7 @@ export default function ProductDetailPage() {
             )}
           </div>
 
-          {/* Rating */}
-          <div className="product-info-rating">
-            <span className="stars">{'★'.repeat(Math.round(product.rating))}{'☆'.repeat(5 - Math.round(product.rating))}</span>
-            <span className="score">{product.rating}</span>
-            <span className="count">({product.reviewCount} reviews)</span>
-          </div>
+
 
           {/* Badges */}
           <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
