@@ -40,8 +40,8 @@ export default function Navbar() {
           </div>
 
           {/* Center nav links */}
-          <div className="navbar-center" style={{ display: 'flex', justifyContent: 'center' }}>
-            <div className="navbar-nav" style={{ display: 'flex' }}>
+          <div className="navbar-center">
+            <div className="navbar-nav">
               {navLinks.map(link => (
                 <Link
                   key={link.href}

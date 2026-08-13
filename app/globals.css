@@ -700,6 +700,11 @@ ul, ol {
   margin-top: 2px;
 }
 
+.navbar-center {
+  display: flex;
+  justify-content: center;
+}
+
 .navbar-nav {
   display: flex;
   align-items: center;
