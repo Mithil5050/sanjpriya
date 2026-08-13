@@ -32,20 +32,7 @@ const categories = [
   },
 ];
 
-const testimonials = [
-  {
-    name: 'Priya Sharma', location: 'Mumbai', rating: 5,
-    text: 'The Kanjeevaram blouse I ordered was beyond my expectations. The fabric quality is outstanding and it paired perfectly with my Mysore silk saree.',
-  },
-  {
-    name: 'Anjali Mehta', location: 'Delhi', rating: 5,
-    text: 'The Anarkali dress was absolutely stunning. I wore it to my cousin\'s wedding and received so many compliments. The embroidery work is exquisite.',
-  },
-  {
-    name: 'Sunita Reddy', location: 'Hyderabad', rating: 5,
-    text: 'Sanjpriya has changed how I shop for ethnic wear. Fast delivery, beautiful packaging, and most importantly — the quality is truly premium.',
-  },
-];
+
 
 
 
@@ -224,34 +211,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ───── TESTIMONIALS ───── */}
-      <section className="testimonials-section">
-        <div className="container">
-          <div className="section-header">
-            <span className="overline">What Our Customers Say</span>
-            <h2>Loved Across India</h2>
-          </div>
-          <div className="testimonials-grid">
-            {testimonials.map((t, i) => (
-              <div key={i} className="testimonial-card">
-                <div className="testimonial-stars">
-                  {'★'.repeat(t.rating)}
-                </div>
-                <p className="testimonial-text">"{t.text}"</p>
-                <div className="testimonial-author">
-                  <div className="testimonial-avatar">
-                    {t.name[0]}
-                  </div>
-                  <div>
-                    <div className="testimonial-name">{t.name}</div>
-                    <div className="testimonial-location">{t.location}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+
 
       {/* ───── NEWSLETTER ───── */}
       <section className="newsletter-section">
