@@ -88,6 +88,15 @@ export async function POST(req: NextRequest) {
       throw error;
     }
 
+    // Try to sync with Shiprocket in the background
+    // We import dynamically to avoid issues if Shiprocket env vars are missing
+    try {
+      const { createShiprocketOrder } = await import('@/lib/shiprocket');
+      await createShiprocketOrder(orderPayload);
+    } catch (e) {
+      console.error('Failed to trigger Shiprocket sync', e);
+    }
+
     return NextResponse.json({ orderNumber, id: data[0].id }, { status: 201 });
   } catch (err) {
     console.error('Order POST failed:', err);
