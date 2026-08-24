@@ -17,7 +17,7 @@ export default function NewProductPage() {
     featured: false,
   });
 
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const target = e.target;
@@ -27,8 +27,14 @@ export default function NewProductPage() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setImageFile(e.target.files[0]);
+      setImageFiles(prev => [...prev, ...Array.from(e.target.files!)]);
     }
+    // reset input so same file can be selected again if removed
+    e.target.value = '';
+  };
+
+  const removeFile = (index: number) => {
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -38,25 +44,27 @@ export default function NewProductPage() {
     try {
       let imageUrls: string[] = [];
 
-      if (imageFile) {
+      if (imageFiles.length > 0) {
         // We need to upload using the frontend supabase client which requires the session
         const { supabase } = await import('@/lib/supabase');
         
-        const fileExt = imageFile.name.split('.').pop();
-        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-        const filePath = `${fileName}`;
+        for (const file of imageFiles) {
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+          const filePath = `${fileName}`;
 
-        const { error: uploadError } = await supabase.storage
-          .from('product-images')
-          .upload(filePath, imageFile);
+          const { error: uploadError } = await supabase.storage
+            .from('product-images')
+            .upload(filePath, file);
 
-        if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`);
+          if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`);
 
-        const { data: { publicUrl } } = supabase.storage
-          .from('product-images')
-          .getPublicUrl(filePath);
+          const { data: { publicUrl } } = supabase.storage
+            .from('product-images')
+            .getPublicUrl(filePath);
 
-        imageUrls.push(publicUrl);
+          imageUrls.push(publicUrl);
+        }
       }
 
       const body = {
@@ -156,8 +164,25 @@ export default function NewProductPage() {
               Images & Labels
             </h3>
             <div className="input-field" style={{ border: '2px dashed var(--outline-variant)', padding: 20, textAlign: 'center', borderRadius: 'var(--radius)' }}>
-              <label htmlFor="image" style={{ display: 'block', fontWeight: 600, marginBottom: 12 }}>Product Image (Upload)</label>
-              <input type="file" id="image" accept="image/*" onChange={handleFileChange} />
+              <label htmlFor="image" style={{ display: 'block', fontWeight: 600, marginBottom: 12 }}>Product Images (Upload Multiple)</label>
+              <input type="file" id="image" accept="image/*" multiple onChange={handleFileChange} />
+              
+              {imageFiles.length > 0 && (
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 16, justifyContent: 'center' }}>
+                  {imageFiles.map((file, i) => (
+                    <div key={i} style={{ position: 'relative', width: 60, height: 80 }}>
+                      <img src={URL.createObjectURL(file)} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 4 }} />
+                      <button 
+                        type="button" 
+                        onClick={() => removeFile(i)}
+                        style={{ position: 'absolute', top: -8, right: -8, background: 'var(--error)', color: 'white', border: 'none', borderRadius: '50%', width: 20, height: 20, cursor: 'pointer', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="input-field">
               <select name="badge" id="badge" value={form.badge} onChange={handleChange}>
