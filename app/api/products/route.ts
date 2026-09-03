@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
     const badge = searchParams.get('badge');
     const sort = searchParams.get('sort') || 'newest';
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '12');
+    const limit = parseInt(searchParams.get('limit') || '100');
     const offset = (page - 1) * limit;
 
     let query = supabase.from('products').select('*', { count: 'exact' });

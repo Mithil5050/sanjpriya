@@ -19,7 +19,7 @@ function SearchContent() {
     const params = new URLSearchParams();
     if (query) params.set('search', query);
     if (badge) params.set('badge', badge);
-    fetch(`/api/products?${params}&limit=24`)
+    fetch(`/api/products?${params}&limit=100`)
       .then(r => r.json())
       .then(d => { setProducts(d.products || []); setLoading(false); });
   }, [query, badge]);

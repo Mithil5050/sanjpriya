@@ -34,7 +34,7 @@ export default function CollectionPage({ category, title, subtitle, description,
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
-    const params = new URLSearchParams({ category, sort });
+    const params = new URLSearchParams({ category, sort, limit: '100' });
     if (maxPrice < 15000) params.set('maxPrice', String(maxPrice));
     const res = await fetch(`/api/products?${params}`);
     const data = await res.json();
