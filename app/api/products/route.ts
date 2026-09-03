@@ -52,6 +52,12 @@ export async function GET(req: NextRequest) {
       });
     }
     if (badge) query = query.eq('badge', badge);
+    
+    const badges = searchParams.get('badges');
+    if (badges) query = query.in('badge', badges.split(','));
+    
+    const maxPrice = searchParams.get('maxPrice');
+    if (maxPrice) query = query.lte('price', parseFloat(maxPrice));
 
     if (sort === 'price_asc') query = query.order('price', { ascending: true });
     else if (sort === 'price_desc') query = query.order('price', { ascending: false });

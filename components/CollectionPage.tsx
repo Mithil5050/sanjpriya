@@ -29,6 +29,7 @@ export default function CollectionPage({ category, title, subtitle, description,
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState('newest');
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
+  const [selectedBadges, setSelectedBadges] = useState<string[]>([]);
   const [maxPrice, setMaxPrice] = useState(15000);
   const [filterOpen, setFilterOpen] = useState(false);
 
@@ -36,6 +37,7 @@ export default function CollectionPage({ category, title, subtitle, description,
     setLoading(true);
     const params = new URLSearchParams({ category, sort, limit: '100' });
     if (maxPrice < 15000) params.set('maxPrice', String(maxPrice));
+    if (selectedBadges.length > 0) params.set('badges', selectedBadges.join(','));
     const res = await fetch(`/api/products?${params}`);
     const data = await res.json();
     let filtered = data.products || [];
@@ -47,13 +49,19 @@ export default function CollectionPage({ category, title, subtitle, description,
     setProducts(filtered);
     setTotal(filtered.length);
     setLoading(false);
-  }, [category, sort, maxPrice, selectedSizes]);
+  }, [category, sort, maxPrice, selectedSizes, selectedBadges]);
 
   useEffect(() => { fetchProducts(); }, [fetchProducts]);
 
   const toggleSize = (size: string) => {
     setSelectedSizes(prev =>
       prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size]
+    );
+  };
+
+  const toggleBadge = (badge: string) => {
+    setSelectedBadges(prev =>
+      prev.includes(badge) ? prev.filter(b => b !== badge) : [...prev, badge]
     );
   };
 
@@ -77,10 +85,10 @@ export default function CollectionPage({ category, title, subtitle, description,
             <aside className="filter-sidebar">
               <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 700 }}>Filters</h3>
-                {(selectedSizes.length > 0 || maxPrice < 15000) && (
+                {(selectedSizes.length > 0 || maxPrice < 15000 || selectedBadges.length > 0) && (
                   <button
                     className="btn btn-ghost btn-sm"
-                    onClick={() => { setSelectedSizes([]); setMaxPrice(15000); }}
+                    onClick={() => { setSelectedSizes([]); setMaxPrice(15000); setSelectedBadges([]); }}
                     style={{ padding: '6px 12px', fontSize: 11 }}
                   >
                     Clear All
@@ -133,7 +141,12 @@ export default function CollectionPage({ category, title, subtitle, description,
                 <div className="filter-group-title">Collection</div>
                 {['New Arrival', 'Best Seller', 'Heritage Collection', 'Festive', 'Premium'].map(badge => (
                   <div key={badge} className="filter-checkbox">
-                    <input type="checkbox" id={`badge-${badge}`} />
+                    <input 
+                      type="checkbox" 
+                      id={`badge-${badge}`} 
+                      checked={selectedBadges.includes(badge)}
+                      onChange={() => toggleBadge(badge)}
+                    />
                     <label htmlFor={`badge-${badge}`}>{badge}</label>
                   </div>
                 ))}
@@ -184,7 +197,7 @@ export default function CollectionPage({ category, title, subtitle, description,
                   <p>Try adjusting your filters to see more results.</p>
                   <button
                     className="btn btn-primary"
-                    onClick={() => { setSelectedSizes([]); setMaxPrice(15000); }}
+                    onClick={() => { setSelectedSizes([]); setMaxPrice(15000); setSelectedBadges([]); }}
                   >
                     Clear Filters
                   </button>
