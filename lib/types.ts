@@ -63,7 +63,10 @@ export interface Review {
   productId: number;
   customerName: string;
   rating: number;
+  title: string;
   comment: string;
+  photoUrl?: string | null;
+  status: 'pending' | 'approved' | 'rejected';
   createdAt: string;
 }
 

@@ -6,6 +6,7 @@ import { Product } from '@/lib/types';
 import { useCart } from '@/components/CartProvider';
 import { useToast } from '@/components/ToastProvider';
 import ProductCard from '@/components/ProductCard';
+import CustomerReviews from '@/components/CustomerReviews';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -270,6 +271,8 @@ export default function ProductDetailPage() {
               )}
             </div>
           </div>
+
+          <CustomerReviews productId={product.id} />
         </div>
       </div>
 
