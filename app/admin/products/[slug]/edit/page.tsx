@@ -44,7 +44,18 @@ export default function EditProductPage({ params }: { params: Promise<{ slug: st
           inStock: d.inStock !== false,
           featured: !!d.featured,
         });
-        setExistingImages(d.images || []);
+        let parsedImages: string[] = [];
+        if (Array.isArray(d.images)) {
+          parsedImages = d.images;
+        } else if (typeof d.images === 'string' && d.images.trim() !== '') {
+          try {
+            const parsed = JSON.parse(d.images);
+            parsedImages = Array.isArray(parsed) ? parsed : [d.images];
+          } catch {
+            parsedImages = [d.images];
+          }
+        }
+        setExistingImages(parsedImages);
         setLoading(false);
       })
       .catch(e => {
