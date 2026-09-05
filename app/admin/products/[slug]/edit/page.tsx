@@ -23,7 +23,7 @@ export default function EditProductPage({ params }: { params: Promise<{ slug: st
   const [existingImages, setExistingImages] = useState<string[]>([]);
 
   useEffect(() => {
-    fetch(`/api/products/${slug}`)
+    fetch(`/api/products/${slug}`, { cache: 'no-store' })
       .then(r => {
         if (!r.ok) throw new Error('Product not found');
         return r.json();

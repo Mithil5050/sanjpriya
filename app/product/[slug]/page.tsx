@@ -26,7 +26,7 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     if (!slug) return;
-    fetch(`/api/products/${slug}`)
+    fetch(`/api/products/${slug}`, { cache: 'no-store' })
       .then(r => r.json())
       .then(p => {
         setProduct(p);

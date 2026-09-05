@@ -11,7 +11,7 @@ export default function AdminProductsPage() {
   const fetchProducts = () => {
     setLoading(true);
     const url = filter === 'all' ? '/api/products?limit=100' : `/api/products?category=${filter}&limit=100`;
-    fetch(url).then(r => r.json()).then(d => {
+    fetch(url, { cache: 'no-store' }).then(r => r.json()).then(d => {
       setProducts(d.products || []);
       setLoading(false);
     });
