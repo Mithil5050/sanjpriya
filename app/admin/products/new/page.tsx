@@ -27,7 +27,8 @@ export default function NewProductPage() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setImageFiles(prev => [...prev, ...Array.from(e.target.files!)]);
+      const filesArray = Array.from(e.target.files);
+      setImageFiles(prev => [...prev, ...filesArray]);
     }
     // reset input so same file can be selected again if removed
     e.target.value = '';

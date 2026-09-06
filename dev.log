@@ -1,0 +1,20 @@
+
+> sanjpriya-app@0.1.0 dev
+> next dev
+
+▲ Next.js 16.3.0 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://172.20.10.6:3000
+- Environments: .env.local
+✓ Ready in 297ms
+✓ Running next.config.ts took 869ms
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.
+
+  To migrate automatically, run:
+  npx @next/codemod@canary middleware-to-proxy .
+
+  Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+
+ GET /api/products/elegant-floral-embroidered-kurti-set 200 in 3.1s (next.js: 599ms, proxy.ts: 36ms, application-code: 2.5s)
+ PUT /api/products/elegant-floral-embroidered-kurti-set 200 in 584ms (next.js: 5ms, proxy.ts: 5ms, application-code: 574ms)
+ GET /api/products/elegant-floral-embroidered-kurti-set 200 in 274ms (next.js: 5ms, proxy.ts: 3ms, application-code: 266ms)
