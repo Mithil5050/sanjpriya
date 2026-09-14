@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useEffect, useState, useRef } from 'react';
 import { Product } from '@/lib/types';
 import ProductCard from '@/components/ProductCard';
+import FestiveBanner from '@/components/FestiveBanner';
 
 const heroImages = [
   '/hero.png',
@@ -124,6 +125,9 @@ export default function HomePage() {
       }}>
         ✦ FREE SHIPPING ON ORDERS ABOVE ₹1999 ✦ USE CODE SANJPRIYA10 FOR 10% OFF ✦ NEW COLLECTION NOW LIVE ✦
       </div>
+
+      {/* ───── FESTIVE BANNER ───── */}
+      <FestiveBanner />
 
       {/* ───── CATEGORIES ───── */}
       <section className="categories-section">
