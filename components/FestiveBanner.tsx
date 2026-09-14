@@ -14,7 +14,7 @@ export default function FestiveBanner() {
     <section style={{
       position: 'relative',
       overflow: 'hidden',
-      background: 'linear-gradient(135deg, #4A0E17 0%, #8A1C29 50%, #C5A059 100%)',
+      background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 50%, var(--heritage-gold) 100%)',
       color: 'white',
       padding: '48px 24px',
       textAlign: 'center',
@@ -91,7 +91,7 @@ export default function FestiveBanner() {
         }}
         onMouseOver={(e) => {
           e.currentTarget.style.background = 'white';
-          e.currentTarget.style.color = '#8A1C29';
+          e.currentTarget.style.color = 'var(--primary)';
           e.currentTarget.style.transform = 'translateY(-2px)';
           e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.3)';
         }}
