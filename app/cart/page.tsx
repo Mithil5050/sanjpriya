@@ -1,11 +1,26 @@
 'use client';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/components/CartProvider';
+import { useToast } from '@/components/ToastProvider';
 
 export default function CartPage() {
-  const { items, removeItem, updateQty, subtotal, clearCart } = useCart();
+  const { items, removeItem, updateQty, subtotal, clearCart, discount, couponCode, applyCoupon, removeCoupon } = useCart();
+  const { showToast } = useToast();
+  const [inputCode, setInputCode] = useState('');
   const shipping = subtotal >= 1999 ? 0 : 149;
-  const total = subtotal + shipping;
+  const total = subtotal - discount + shipping;
+
+  const handleApply = () => {
+    if (!inputCode.trim()) return;
+    const res = applyCoupon(inputCode.trim());
+    if (res.success) {
+      showToast(res.message);
+      setInputCode('');
+    } else {
+      showToast(res.message, 'error');
+    }
+  };
 
   if (items.length === 0) {
     return (
@@ -88,16 +103,29 @@ export default function CartPage() {
           marginTop: 24, padding: 20,
           background: 'var(--accent-pink-light)',
           borderRadius: 'var(--radius-lg)',
-          display: 'flex', gap: 12,
+          display: 'flex', gap: 12, alignItems: 'center'
         }}>
-          <input
-            type="text"
-            placeholder="Coupon code"
-            className="search-input"
-            style={{ flex: 1, borderRadius: 'var(--radius)', padding: '12px 16px' }}
-            aria-label="Enter coupon code"
-          />
-          <button className="btn btn-primary btn-sm">Apply</button>
+          {couponCode ? (
+            <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <span style={{ fontWeight: 600, color: 'var(--primary-energetic)' }}>{couponCode}</span> applied!
+              </div>
+              <button onClick={removeCoupon} className="btn btn-ghost btn-sm" style={{ padding: '6px 12px' }}>Remove</button>
+            </div>
+          ) : (
+            <>
+              <input
+                type="text"
+                placeholder="Coupon code"
+                className="search-input"
+                style={{ flex: 1, borderRadius: 'var(--radius)', padding: '12px 16px', textTransform: 'uppercase' }}
+                aria-label="Enter coupon code"
+                value={inputCode}
+                onChange={e => setInputCode(e.target.value)}
+              />
+              <button onClick={handleApply} className="btn btn-primary btn-sm">Apply</button>
+            </>
+          )}
         </div>
       </div>
 
@@ -108,6 +136,12 @@ export default function CartPage() {
           <span>Subtotal ({items.length} items)</span>
           <span>₹{subtotal.toLocaleString('en-IN')}</span>
         </div>
+        {discount > 0 && (
+          <div className="summary-row" style={{ color: 'var(--primary-energetic)', fontWeight: 600 }}>
+            <span>Discount ({couponCode})</span>
+            <span>-₹{discount.toLocaleString('en-IN')}</span>
+          </div>
+        )}
         <div className="summary-row">
           <span>Shipping</span>
           <span style={{ color: shipping === 0 ? 'var(--tertiary)' : undefined }}>

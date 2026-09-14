@@ -6,11 +6,11 @@ import { useCart } from '@/components/CartProvider';
 import { useToast } from '@/components/ToastProvider';
 
 export default function CheckoutPage() {
-  const { items, subtotal, clearCart } = useCart();
+  const { items, subtotal, discount, couponCode, clearCart } = useCart();
   const { showToast } = useToast();
   const router = useRouter();
   const shipping = subtotal >= 1999 ? 0 : 149;
-  const total = subtotal + shipping;
+  const total = subtotal - discount + shipping;
 
   const [form, setForm] = useState({
     customerName: '', customerEmail: '', customerPhone: '',
@@ -133,7 +133,7 @@ export default function CheckoutPage() {
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...orderData, items, subtotal, shipping, total }),
+        body: JSON.stringify({ ...orderData, items, subtotal, discount, couponCode, shipping, total }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -307,6 +307,12 @@ export default function CheckoutPage() {
               <span>Subtotal</span>
               <span>₹{subtotal.toLocaleString('en-IN')}</span>
             </div>
+            {discount > 0 && (
+              <div className="summary-row" style={{ color: 'var(--primary-energetic)', fontWeight: 600 }}>
+                <span>Discount ({couponCode})</span>
+                <span>-₹{discount.toLocaleString('en-IN')}</span>
+              </div>
+            )}
             <div className="summary-row">
               <span>Shipping</span>
               <span style={{ color: shipping === 0 ? 'var(--tertiary)' : undefined }}>

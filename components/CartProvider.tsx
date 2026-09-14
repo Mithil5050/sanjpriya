@@ -10,6 +10,10 @@ interface CartContextType {
   clearCart: () => void;
   totalItems: number;
   subtotal: number;
+  discount: number;
+  couponCode: string | null;
+  applyCoupon: (code: string) => { success: boolean; message: string };
+  removeCoupon: () => void;
 }
 
 const CartContext = createContext<CartContextType | null>(null);
@@ -22,17 +26,28 @@ export function useCart() {
 
 export default function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [couponCode, setCouponCode] = useState<string | null>(null);
 
   useEffect(() => {
     try {
       const stored = localStorage.getItem('sanjpriya_cart');
       if (stored) setItems(JSON.parse(stored));
+      const storedCoupon = localStorage.getItem('sanjpriya_coupon');
+      if (storedCoupon) setCouponCode(storedCoupon);
     } catch {}
   }, []);
 
   useEffect(() => {
     localStorage.setItem('sanjpriya_cart', JSON.stringify(items));
   }, [items]);
+
+  useEffect(() => {
+    if (couponCode) {
+      localStorage.setItem('sanjpriya_coupon', couponCode);
+    } else {
+      localStorage.removeItem('sanjpriya_coupon');
+    }
+  }, [couponCode]);
 
   const addItem = useCallback((newItem: CartItem) => {
     setItems(prev => {
@@ -68,11 +83,24 @@ export default function CartProvider({ children }: { children: React.ReactNode }
 
   const clearCart = useCallback(() => setItems([]), []);
 
+  const applyCoupon = useCallback((code: string) => {
+    if (code.toUpperCase() === 'BAPPA10') {
+      setCouponCode('BAPPA10');
+      return { success: true, message: 'Coupon applied successfully!' };
+    }
+    return { success: false, message: 'Invalid or expired coupon code.' };
+  }, []);
+
+  const removeCoupon = useCallback(() => {
+    setCouponCode(null);
+  }, []);
+
   const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const discount = couponCode === 'BAPPA10' ? subtotal * 0.25 : 0;
 
   return (
-    <CartContext.Provider value={{ items, addItem, removeItem, updateQty, clearCart, totalItems, subtotal }}>
+    <CartContext.Provider value={{ items, addItem, removeItem, updateQty, clearCart, totalItems, subtotal, discount, couponCode, applyCoupon, removeCoupon }}>
       {children}
     </CartContext.Provider>
   );
