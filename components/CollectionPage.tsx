@@ -5,7 +5,7 @@ import { Product } from '@/lib/types';
 import ProductCard from './ProductCard';
 
 interface CollectionPageProps {
-  category: 'kurtis' | 'blouses' | 'dresses';
+  category: 'kurtis' | 'blouses' | 'dresses' | 'clutches' | 'paithani-blouses';
   title: string;
   subtitle: string;
   description: string;

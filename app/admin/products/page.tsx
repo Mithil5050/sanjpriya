@@ -75,7 +75,7 @@ export default function AdminProductsPage() {
 
       {/* Filters */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
-        {['all', 'kurtis', 'blouses', 'dresses'].map(f => (
+        {['all', 'kurtis', 'blouses', 'dresses', 'clutches', 'paithani-blouses'].map(f => (
           <button
             key={f}
             onClick={() => setFilter(f)}

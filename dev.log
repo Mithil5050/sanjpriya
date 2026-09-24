@@ -25,3 +25,4 @@
  GET /apple-touch-icon.png 404 in 24ms (next.js: 1.9ms, application-code: 23ms)
  GET /api/products?limit=20 200 in 312ms (next.js: 44ms, proxy.ts: 14ms, application-code: 254ms)
  GET /api/products?limit=20 200 in 312ms (next.js: 46ms, proxy.ts: 17ms, application-code: 249ms)
+[?25h

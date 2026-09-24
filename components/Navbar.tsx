@@ -9,6 +9,8 @@ const navLinks = [
   { href: '/kurtis', label: 'Kurtis' },
   { href: '/blouses', label: 'Blouses' },
   { href: '/dresses', label: 'Dresses' },
+  { href: '/clutches', label: 'Clutches' },
+  { href: '/paithani-blouses', label: 'Paithani Blouses' },
 ];
 
 export default function Navbar() {

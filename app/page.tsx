@@ -31,6 +31,20 @@ const categories = [
     href: '/dresses',
     image: '/cat-dresses.jpg?v=3',
   },
+  {
+    label: 'Festive',
+    title: 'Clutches',
+    desc: 'Festive & Occasional Clutches Handbags',
+    href: '/clutches',
+    image: '/cat-clutches.jpg',
+  },
+  {
+    label: 'Traditional',
+    title: 'Paithani Blouses',
+    desc: 'Paithani Blauses And Unstitched Fabric',
+    href: '/paithani-blouses',
+    image: '/cat-paithani-blouses.jpg',
+  },
 ];
 
 

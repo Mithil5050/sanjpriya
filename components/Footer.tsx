@@ -53,6 +53,8 @@ export default function Footer() {
               <li><Link href="/kurtis">Kurtis</Link></li>
               <li><Link href="/blouses">Blouses</Link></li>
               <li><Link href="/dresses">Dresses</Link></li>
+              <li><Link href="/clutches">Clutches</Link></li>
+              <li><Link href="/paithani-blouses">Paithani Blouses</Link></li>
               <li><Link href="/search?badge=New+Arrival">New Arrivals</Link></li>
               <li><Link href="/search?badge=Heritage+Collection">Heritage Collection</Link></li>
               <li><Link href="/search?badge=Premium">Premium</Link></li>

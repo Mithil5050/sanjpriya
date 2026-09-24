@@ -39,6 +39,8 @@ export default function AdminDashboard() {
     { label: 'Kurtis', icon: '👘', link: '/kurtis' },
     { label: 'Blouses', icon: '👚', link: '/blouses' },
     { label: 'Dresses', icon: '👗', link: '/dresses' },
+    { label: 'Clutches', icon: '👜', link: '/clutches' },
+    { label: 'Paithani Blouses', icon: '🌺', link: '/paithani-blouses' },
   ];
 
   return (
@@ -65,7 +67,7 @@ export default function AdminDashboard() {
           <div className="stat-label">Total Revenue</div>
         </div>
         <div className="admin-stat-card secondary">
-          <div className="stat-value">3</div>
+          <div className="stat-value">5</div>
           <div className="stat-label">Categories</div>
         </div>
       </div>
