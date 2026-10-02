@@ -84,10 +84,6 @@ export default function CartProvider({ children }: { children: React.ReactNode }
   const clearCart = useCallback(() => setItems([]), []);
 
   const applyCoupon = useCallback((code: string) => {
-    if (code.toUpperCase() === 'BAPPA10') {
-      setCouponCode('BAPPA10');
-      return { success: true, message: 'Coupon applied successfully!' };
-    }
     return { success: false, message: 'Invalid or expired coupon code.' };
   }, []);
 
@@ -97,7 +93,7 @@ export default function CartProvider({ children }: { children: React.ReactNode }
 
   const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const discount = couponCode === 'BAPPA10' ? subtotal * 0.25 : 0;
+  const discount = 0;
 
   return (
     <CartContext.Provider value={{ items, addItem, removeItem, updateQty, clearCart, totalItems, subtotal, discount, couponCode, applyCoupon, removeCoupon }}>
