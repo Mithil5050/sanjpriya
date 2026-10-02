@@ -9,7 +9,7 @@ const navLinks = [
   { href: '/kurtis', label: 'Kurtis' },
   { href: '/blouses', label: 'Blouses' },
   { href: '/dresses', label: 'Dresses' },
-  { href: '/clutches', label: 'Clutches' },
+  { href: '/handbags', label: 'Handbags' },
   { href: '/paithani-blouses', label: 'Paithani Blouses' },
 ];
 

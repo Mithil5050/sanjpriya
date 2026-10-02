@@ -169,7 +169,7 @@ export default function EditProductPage({ params }: { params: Promise<{ slug: st
                   <option value="kurtis">Kurtis</option>
                   <option value="blouses">Blouses</option>
                   <option value="dresses">Dresses</option>
-                  <option value="clutches">Clutches</option>
+                  <option value="handbags">Handbags</option>
                   <option value="paithani-blouses">Paithani Blouses</option>
                 </select>
                 <label htmlFor="category">Category *</label>

@@ -39,7 +39,7 @@ export default function AdminDashboard() {
     { label: 'Kurtis', icon: '👘', link: '/kurtis' },
     { label: 'Blouses', icon: '👚', link: '/blouses' },
     { label: 'Dresses', icon: '👗', link: '/dresses' },
-    { label: 'Clutches', icon: '👜', link: '/clutches' },
+    { label: 'Handbags', icon: '👜', link: '/handbags' },
     { label: 'Paithani Blouses', icon: '🌺', link: '/paithani-blouses' },
   ];
 

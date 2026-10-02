@@ -38,7 +38,7 @@ function SearchContent() {
           <input
             type="text"
             className="search-input"
-            placeholder="Search kurtis, blouses, dresses, clutches, paithani blouses..."
+            placeholder="Search kurtis, blouses, dresses, handbags, paithani blouses..."
             value={searchInput}
             onChange={e => setSearchInput(e.target.value)}
             style={{ border: 'none', borderRadius: 0 }}
@@ -78,7 +78,7 @@ function SearchContent() {
                 <Link href="/kurtis" className="btn btn-primary">Kurtis</Link>
                 <Link href="/blouses" className="btn btn-ghost">Blouses</Link>
                 <Link href="/dresses" className="btn btn-ghost">Dresses</Link>
-                <Link href="/clutches" className="btn btn-ghost">Clutches</Link>
+                <Link href="/handbags" className="btn btn-ghost">Handbags</Link>
                 <Link href="/paithani-blouses" className="btn btn-ghost">Paithani Blouses</Link>
               </div>
             </div>
@@ -86,7 +86,7 @@ function SearchContent() {
             <div className="empty-state">
               <div className="empty-state-icon">✨</div>
               <h3>What are you looking for?</h3>
-              <p>Search for kurtis, blouses, dresses, clutches, or any style.</p>
+              <p>Search for kurtis, blouses, dresses, handbags, or any style.</p>
             </div>
           )}
         </div>

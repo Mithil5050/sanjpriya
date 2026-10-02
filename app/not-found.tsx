@@ -109,7 +109,7 @@ export default function NotFound() {
         <QuickLink href="/kurtis" label="👘 Kurtis" />
         <QuickLink href="/blouses" label="👚 Blouses" />
         <QuickLink href="/dresses" label="👗 Dresses" />
-        <QuickLink href="/clutches" label="👜 Clutches" />
+        <QuickLink href="/handbags" label="👜 Handbags" />
         <QuickLink href="/paithani-blouses" label="🌺 Paithani Blouses" />
         <QuickLink href="/search" label="🔍 Search" />
       </div>

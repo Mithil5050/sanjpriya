@@ -2,7 +2,7 @@ export interface Product {
   id: number;
   name: string;
   slug: string;
-  category: 'kurtis' | 'blouses' | 'dresses' | 'clutches' | 'paithani-blouses';
+  category: 'kurtis' | 'blouses' | 'dresses' | 'handbags' | 'paithani-blouses';
   price: number;
   originalPrice?: number;
   description: string;

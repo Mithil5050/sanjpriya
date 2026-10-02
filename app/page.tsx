@@ -33,10 +33,10 @@ const categories = [
   },
   {
     label: 'Festive',
-    title: 'Clutches',
-    desc: 'Festive & Occasional Clutches Handbags',
-    href: '/clutches',
-    image: '/cat-clutches.jpg',
+    title: 'Handbags',
+    desc: 'Festive & Occasional Handbags',
+    href: '/handbags',
+    image: '/cat-handbags.jpg',
   },
   {
     label: 'Traditional',
