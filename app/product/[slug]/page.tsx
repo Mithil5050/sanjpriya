@@ -224,7 +224,7 @@ export default function ProductDetailPage() {
             borderRadius: 'var(--radius-lg)',
           }}>
             {[
-              { icon: '🚚', text: 'Free Delivery', sub: 'On orders above ₹1999' },
+              { icon: '🚚', text: 'Free Delivery', sub: 'On orders above ₹999' },
               { icon: '↩', text: 'Easy Returns', sub: '7-day return policy' },
               { icon: '🔒', text: 'Secure Payment', sub: 'SSL encrypted' },
             ].map(b => (

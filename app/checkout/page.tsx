@@ -9,7 +9,7 @@ export default function CheckoutPage() {
   const { items, subtotal, discount, couponCode, clearCart } = useCart();
   const { showToast } = useToast();
   const router = useRouter();
-  const shipping = subtotal >= 1999 ? 0 : 149;
+  const shipping = subtotal >= 999 ? 0 : 99;
   const total = subtotal - discount + shipping;
 
   const [form, setForm] = useState({

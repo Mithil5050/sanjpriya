@@ -137,7 +137,7 @@ export default function HomePage() {
         textAlign: 'center', padding: '12px',
         fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 700, letterSpacing: '0.15em',
       }}>
-        ✦ FREE SHIPPING ON ORDERS ABOVE ₹1999 ✦ USE CODE SANJPRIYA10 FOR 10% OFF ✦ NEW COLLECTION NOW LIVE ✦
+        ✦ FREE SHIPPING ON ORDERS ABOVE ₹999 ✦ USE CODE SANJPRIYA10 FOR 10% OFF ✦ NEW COLLECTION NOW LIVE ✦
       </div>
 
 

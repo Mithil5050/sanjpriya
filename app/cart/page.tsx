@@ -8,7 +8,7 @@ export default function CartPage() {
   const { items, removeItem, updateQty, subtotal, clearCart, discount, couponCode, applyCoupon, removeCoupon } = useCart();
   const { showToast } = useToast();
   const [inputCode, setInputCode] = useState('');
-  const shipping = subtotal >= 1999 ? 0 : 149;
+  const shipping = subtotal >= 999 ? 0 : 99;
   const total = subtotal - discount + shipping;
 
   const handleApply = () => {
@@ -150,7 +150,7 @@ export default function CartPage() {
         </div>
         {shipping > 0 && (
           <p style={{ fontSize: 12, color: 'var(--outline)', marginBottom: 12 }}>
-            Add ₹{(1999 - subtotal).toLocaleString('en-IN')} more for free shipping
+            Add ₹{(999 - subtotal).toLocaleString('en-IN')} more for free shipping
           </p>
         )}
         <div className="summary-row total">
