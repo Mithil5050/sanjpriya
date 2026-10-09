@@ -14,7 +14,7 @@ export default function CheckoutPage() {
 
   const [form, setForm] = useState({
     customerName: '', customerEmail: '', customerPhone: '',
-    address: '', city: '', state: '', pincode: '',
+    address: '', landmark: '', city: '', state: '', pincode: '',
     paymentMethod: 'cod',
   });
   const [loading, setLoading] = useState(false);
@@ -221,6 +221,10 @@ export default function CheckoutPage() {
                 <textarea name="address" id="address" placeholder=" " value={form.address} onChange={handleChange} rows={2} required style={{ resize: 'none' }} />
                 <label htmlFor="address">Full Address *</label>
                 {errors.address && <span style={{ color: 'var(--error)', fontSize: 12 }}>{errors.address}</span>}
+              </div>
+              <div className="input-field">
+                <input type="text" name="landmark" id="landmark" placeholder=" " value={form.landmark} onChange={handleChange} />
+                <label htmlFor="landmark">Landmark (Optional)</label>
               </div>
               <div className="form-row">
                 <div className="input-field">

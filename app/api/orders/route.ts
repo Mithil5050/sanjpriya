@@ -50,6 +50,7 @@ export async function POST(req: NextRequest) {
       customer_email: body.customerEmail,
       customer_phone: body.customerPhone,
       address: body.address,
+      landmark: body.landmark || null,
       city: body.city,
       state: body.state,
       pincode: body.pincode,

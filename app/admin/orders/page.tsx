@@ -7,8 +7,11 @@ interface Order {
   customer_name: string;
   customer_email: string;
   customer_phone: string;
+  address: string;
+  landmark: string | null;
   city: string;
   state: string;
+  pincode: string;
   items: Array<{ name: string; quantity: number; price: number }>;
   subtotal: number;
   shipping: number;
@@ -125,6 +128,13 @@ export default function AdminOrdersPage() {
               <p style={{ fontSize: 14, fontWeight: 600 }}>{selectedOrder.customer_name}</p>
               <p style={{ fontSize: 13, color: 'var(--outline)' }}>{selectedOrder.customer_email}</p>
               <p style={{ fontSize: 13, color: 'var(--outline)' }}>{selectedOrder.customer_phone}</p>
+            </div>
+
+            <div style={{ marginBottom: 16, paddingTop: 16, borderTop: '1px solid var(--outline-variant)' }}>
+              <h4 style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--outline)', marginBottom: 8 }}>Shipping Address</h4>
+              <p style={{ fontSize: 13 }}>{selectedOrder.address}</p>
+              {selectedOrder.landmark && <p style={{ fontSize: 13 }}>Landmark: {selectedOrder.landmark}</p>}
+              <p style={{ fontSize: 13 }}>{selectedOrder.city}, {selectedOrder.state} {selectedOrder.pincode}</p>
             </div>
 
             <div style={{ marginBottom: 16, paddingTop: 16, borderTop: '1px solid var(--outline-variant)' }}>
