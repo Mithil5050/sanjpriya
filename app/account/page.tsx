@@ -89,7 +89,30 @@ export default async function AccountDashboard() {
                       {new Date(order.created_at).toLocaleDateString()}
                     </td>
                     <td style={{ padding: '16px' }}>
-                      {order.items?.length || 0} items
+                      {order.items && order.items.length > 0 ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          {order.items[0].image ? (
+                            <img
+                              src={order.items[0].image}
+                              alt={order.items[0].name}
+                              style={{ width: 38, height: 48, objectFit: 'cover', borderRadius: 4, border: '1px solid var(--outline-variant)' }}
+                            />
+                          ) : (
+                            <div style={{ width: 38, height: 48, borderRadius: 4, background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>
+                              👗
+                            </div>
+                          )}
+                          <div>
+                            <div style={{ fontWeight: 600, fontSize: 13 }}>{order.items[0].name}</div>
+                            <div style={{ fontSize: 11, color: 'var(--on-surface-variant)' }}>
+                              {order.items[0].size && `Size: ${order.items[0].size} · `}Qty: {order.items[0].quantity}
+                              {order.items.length > 1 && ` (+${order.items.length - 1} more)`}
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <span>0 items</span>
+                      )}
                     </td>
                     <td style={{ padding: '16px', fontWeight: 700, color: 'var(--primary-energetic)' }}>
                       ₹{order.total.toLocaleString('en-IN')}

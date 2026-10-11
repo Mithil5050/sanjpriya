@@ -2,6 +2,16 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
+interface OrderItem {
+  name: string;
+  quantity: number;
+  price: number;
+  image?: string;
+  size?: string;
+  color?: string;
+  slug?: string;
+}
+
 interface Stats {
   totalProducts: number;
   totalOrders: number;
@@ -13,6 +23,7 @@ interface Stats {
     total: number;
     status: string;
     created_at: string;
+    items?: OrderItem[];
   }>;
 }
 
@@ -72,7 +83,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.35fr 0.65fr', gap: 24 }}>
         {/* Recent Orders */}
         <div className="admin-table">
           <div style={{ padding: '20px 20px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -84,19 +95,51 @@ export default function AdminDashboard() {
               <tr>
                 <th>Order #</th>
                 <th>Customer</th>
+                <th>Product</th>
                 <th>Amount</th>
                 <th>Status</th>
               </tr>
             </thead>
             <tbody>
               {stats?.recentOrders.length === 0 && (
-                <tr><td colSpan={4} style={{ textAlign: 'center', color: 'var(--outline)', padding: 24 }}>No orders yet</td></tr>
+                <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--outline)', padding: 24 }}>No orders yet</td></tr>
               )}
               {stats?.recentOrders.map(order => (
                 <tr key={order.id}>
-                  <td style={{ fontWeight: 700, color: 'var(--primary-energetic)' }}>{order.order_number}</td>
-                  <td>{order.customer_name}</td>
-                  <td>₹{order.total.toLocaleString('en-IN')}</td>
+                  <td style={{ fontWeight: 700, color: 'var(--primary-energetic)' }}>
+                    <Link href="/admin/orders" style={{ color: 'inherit', textDecoration: 'none' }}>
+                      {order.order_number}
+                    </Link>
+                  </td>
+                  <td>
+                    <div style={{ fontWeight: 600 }}>{order.customer_name}</div>
+                  </td>
+                  <td>
+                    {order.items && order.items.length > 0 ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        {order.items[0].image ? (
+                          <img
+                            src={order.items[0].image}
+                            alt={order.items[0].name}
+                            style={{ width: 34, height: 42, objectFit: 'cover', borderRadius: 4, border: '1px solid var(--outline-variant)' }}
+                          />
+                        ) : (
+                          <div style={{ width: 34, height: 42, borderRadius: 4, background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }}>
+                            👗
+                          </div>
+                        )}
+                        <div style={{ maxWidth: 130, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12, fontWeight: 600 }}>
+                          {order.items[0].name}
+                          {order.items.length > 1 && (
+                            <span style={{ color: 'var(--outline)', fontSize: 11, fontWeight: 400 }}> +{order.items.length - 1}</span>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <span style={{ color: 'var(--outline)', fontSize: 12 }}>—</span>
+                    )}
+                  </td>
+                  <td style={{ fontWeight: 700 }}>₹{order.total.toLocaleString('en-IN')}</td>
                   <td>
                     <span className={`status-badge status-${order.status}`}>{order.status}</span>
                   </td>
