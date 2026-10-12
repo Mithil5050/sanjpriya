@@ -1,6 +1,8 @@
 'use client';
 import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
+import OrderInvoice from '@/components/admin/OrderInvoice';
+import ExportOrdersModal from '@/components/admin/ExportOrdersModal';
 
 interface OrderItem {
   name: string;
@@ -121,6 +123,8 @@ export default function AdminOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [previewImage, setPreviewImage] = useState<PreviewImage | null>(null);
+  const [invoiceOrder, setInvoiceOrder] = useState<Order | null>(null);
+  const [showExportModal, setShowExportModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
@@ -192,13 +196,32 @@ export default function AdminOrdersPage() {
               {orders.length} total orders · Revenue: ₹{totalRevenue.toLocaleString('en-IN')}
             </p>
           </div>
-          <button
-            onClick={() => { setLoading(true); fetchOrders(); }}
-            className="btn btn-ghost btn-sm"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
-          >
-            🔄 Refresh Orders
-          </button>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <button
+              onClick={() => setShowExportModal(true)}
+              className="btn btn-secondary btn-sm"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                fontWeight: 700,
+                padding: '8px 16px',
+                borderRadius: '8px',
+                background: '#fff',
+                border: '1px solid var(--outline-variant, #e0ddd5)',
+                cursor: 'pointer',
+              }}
+            >
+              📥 Export (CSV/Excel)
+            </button>
+            <button
+              onClick={() => { setLoading(true); fetchOrders(); }}
+              className="btn btn-ghost btn-sm"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 14px' }}
+            >
+              🔄 Refresh Orders
+            </button>
+          </div>
         </div>
       </div>
 
@@ -481,13 +504,31 @@ export default function AdminOrdersPage() {
                     })}
                   </td>
                   <td>
-                    <button
-                      className="btn btn-ghost btn-sm"
-                      style={{ padding: '6px 12px', fontSize: 11, fontWeight: 600 }}
-                      onClick={e => { e.stopPropagation(); setSelectedOrder(order); }}
-                    >
-                      View
-                    </button>
+                    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                      <button
+                        className="btn btn-ghost btn-sm"
+                        style={{ padding: '6px 12px', fontSize: 11, fontWeight: 600 }}
+                        onClick={e => { e.stopPropagation(); setSelectedOrder(order); }}
+                      >
+                        View
+                      </button>
+                      <button
+                        className="btn btn-ghost btn-sm"
+                        style={{
+                          padding: '6px 10px',
+                          fontSize: 11,
+                          fontWeight: 600,
+                          color: 'var(--primary-energetic, #c95d3c)',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
+                        }}
+                        onClick={e => { e.stopPropagation(); setInvoiceOrder(order); }}
+                        title="Generate Tax Invoice"
+                      >
+                        📄 Invoice
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -537,6 +578,52 @@ export default function AdminOrdersPage() {
               >
                 ✕
               </button>
+            </div>
+
+            {/* Invoice Generation & Quick Actions Bar */}
+            <div style={{ marginBottom: 16, display: 'flex', gap: 8 }}>
+              <button
+                onClick={() => setInvoiceOrder(selectedOrder)}
+                style={{
+                  flex: 1,
+                  padding: '10px 14px',
+                  borderRadius: 8,
+                  border: 'none',
+                  background: 'var(--primary-energetic, #c95d3c)',
+                  color: '#ffffff',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                  boxShadow: '0 2px 8px rgba(201, 93, 60, 0.25)',
+                }}
+              >
+                📄 Download / Print PDF Invoice
+              </button>
+              <a
+                href={`/admin/orders/invoice?id=${selectedOrder.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  padding: '10px 14px',
+                  borderRadius: 8,
+                  border: '1px solid var(--outline-variant, #e0ddd5)',
+                  background: '#ffffff',
+                  color: '#444',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                title="Open invoice in new tab"
+              >
+                ↗
+              </a>
             </div>
 
             {/* Quick Status Update */}
@@ -878,6 +965,22 @@ export default function AdminOrdersPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* TAX SALES INVOICE MODAL */}
+      {invoiceOrder && (
+        <OrderInvoice
+          order={invoiceOrder as any}
+          onClose={() => setInvoiceOrder(null)}
+        />
+      )}
+
+      {/* EXPORT ORDERS (CSV / EXCEL) MODAL */}
+      {showExportModal && (
+        <ExportOrdersModal
+          orders={orders as any}
+          onClose={() => setShowExportModal(false)}
+        />
       )}
     </div>
   );
