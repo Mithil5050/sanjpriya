@@ -10,6 +10,8 @@ export interface InvoiceOrderItem {
   color?: string;
   slug?: string;
   productId?: number;
+  hsn?: string;
+  gst_rate?: number; // GST rate in percentage (e.g. 5, 12, 18). Defaults to 5 for clothing.
 }
 
 export interface InvoiceOrder {
@@ -33,6 +35,14 @@ export interface InvoiceOrder {
   created_at: string;
 }
 
+// ── Company constants ──────────────────────────────────────────────
+const COMPANY_GSTIN = '27JODPK9839D1ZHD';
+const COMPANY_STATE = 'Maharashtra';
+const COMPANY_STATE_CODE = '27';
+const DEFAULT_ITEM_GST_RATE = 5; // Default GST % for clothing items (HSN 6204, value < ₹1000)
+const SHIPPING_GST_RATE = 5;     // GST % applicable on shipping charges
+
+// ── Helpers ────────────────────────────────────────────────────────
 export function numberToWordsINR(amount: number): string {
   const num = Math.round(amount);
   if (num === 0) return 'Zero Rupees Only';
@@ -77,6 +87,12 @@ export function numberToWordsINR(amount: number): string {
   return words.trim() ? `${words.trim()} Rupees Only` : 'Zero Rupees Only';
 }
 
+/** Format a number in Indian locale with 2 decimal places */
+function fmt(n: number): string {
+  return n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// ── Component ──────────────────────────────────────────────────────
 interface OrderInvoiceProps {
   order: InvoiceOrder;
   onClose?: () => void;
@@ -97,9 +113,51 @@ export default function OrderInvoice({ order, onClose, isStandalone = false }: O
     minute: '2-digit',
   });
 
-  const discount = Math.max(0, (order.subtotal + (order.shipping || 0)) - order.total);
   const isPrepaid = order.payment_method?.toLowerCase() === 'prepaid';
 
+  // ── GST Computation ────────────────────────────────────────────
+  const isIntraState = (order.state || '').toLowerCase().trim() === COMPANY_STATE.toLowerCase();
+
+  // Per-item GST calculation
+  const itemsWithGST = (order.items || []).map((item) => {
+    const gstRate = item.gst_rate ?? DEFAULT_ITEM_GST_RATE;
+    const lineTotal = item.price * item.quantity; // inclusive price
+    // Back-calculate taxable value from inclusive price: taxableValue = inclusivePrice / (1 + gstRate/100)
+    const taxableValue = lineTotal / (1 + gstRate / 100);
+    const gstAmount = lineTotal - taxableValue;
+    return {
+      ...item,
+      gstRate,
+      lineTotal,
+      taxableValue,
+      gstAmount,
+    };
+  });
+
+  // Aggregate totals
+  const totalTaxableValue = itemsWithGST.reduce((s, i) => s + i.taxableValue, 0);
+  const totalItemGST = itemsWithGST.reduce((s, i) => s + i.gstAmount, 0);
+
+  // Group GST by rate for the summary
+  const gstByRate: Record<number, { taxable: number; gst: number }> = {};
+  itemsWithGST.forEach((item) => {
+    if (!gstByRate[item.gstRate]) gstByRate[item.gstRate] = { taxable: 0, gst: 0 };
+    gstByRate[item.gstRate].taxable += item.taxableValue;
+    gstByRate[item.gstRate].gst += item.gstAmount;
+  });
+
+  // Shipping GST
+  const shippingAmount = order.shipping || 0;
+  const shippingTaxable = shippingAmount > 0 ? shippingAmount / (1 + SHIPPING_GST_RATE / 100) : 0;
+  const shippingGST = shippingAmount > 0 ? shippingAmount - shippingTaxable : 0;
+
+  // Grand total breakdown
+  const grandTotalTaxable = totalTaxableValue + shippingTaxable;
+  const grandTotalGST = totalItemGST + shippingGST;
+
+  const discount = Math.max(0, (order.subtotal + shippingAmount) - order.total);
+
+  // ── Print / Download ───────────────────────────────────────────
   const handlePrint = () => {
     window.print();
   };
@@ -132,6 +190,20 @@ export default function OrderInvoice({ order, onClose, isStandalone = false }: O
     URL.revokeObjectURL(url);
   };
 
+  // ── Shared table header style ──────────────────────────────────
+  const thStyle: React.CSSProperties = {
+    padding: '10px 6px',
+    textAlign: 'center',
+    fontSize: '10px',
+    fontWeight: 700,
+    color: '#444',
+    textTransform: 'uppercase',
+    letterSpacing: '0.03em',
+  };
+
+  // ────────────────────────────────────────────────────────────────
+  // INVOICE CONTENT
+  // ────────────────────────────────────────────────────────────────
   const invoiceContent = (
     <div
       ref={invoiceRef}
@@ -149,7 +221,7 @@ export default function OrderInvoice({ order, onClose, isStandalone = false }: O
         lineHeight: 1.5,
       }}
     >
-      {/* HEADER SECTION */}
+      {/* ══════════════ HEADER SECTION ══════════════ */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '20px', borderBottom: '2px solid #c95d3c' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '8px' }}>
@@ -170,6 +242,22 @@ export default function OrderInvoice({ order, onClose, isStandalone = false }: O
           <div style={{ fontSize: '11px', color: '#666', lineHeight: 1.4, marginTop: '8px' }}>
             <div>Email: <strong>support@sanjpriya.com</strong> | Phone: <strong>+91 93240 18833</strong></div>
             <div>Website: <strong>www.sanjpriya.com</strong> | Mumbai, Maharashtra, India</div>
+          </div>
+          {/* GSTIN prominently displayed */}
+          <div style={{
+            marginTop: '8px',
+            display: 'inline-block',
+            background: '#fdf6f0',
+            border: '1px solid #e8cbb8',
+            borderRadius: '4px',
+            padding: '4px 12px',
+          }}>
+            <span style={{ fontSize: '10px', fontWeight: 700, color: '#8c593b', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              GSTIN:{' '}
+            </span>
+            <span style={{ fontSize: '13px', fontWeight: 800, color: '#1a1a1a', letterSpacing: '0.06em', fontFamily: 'monospace' }}>
+              {COMPANY_GSTIN}
+            </span>
           </div>
         </div>
 
@@ -223,7 +311,7 @@ export default function OrderInvoice({ order, onClose, isStandalone = false }: O
         </div>
       </div>
 
-      {/* BILL TO & SHIP TO SECTION */}
+      {/* ══════════════ BILL TO & SUPPLY DETAILS ══════════════ */}
       <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '20px', margin: '20px 0', padding: '16px', background: '#fcfbf9', border: '1px solid #ebe8e2', borderRadius: '6px' }}>
         <div>
           <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#8c593b', marginBottom: '6px' }}>
@@ -250,61 +338,93 @@ export default function OrderInvoice({ order, onClose, isStandalone = false }: O
           </div>
           <div style={{ fontSize: '12px', color: '#444', lineHeight: 1.6 }}>
             <div>Place of Supply: <strong>{order.state || 'Maharashtra'}</strong></div>
+            <div>State Code: <strong>{COMPANY_STATE_CODE}</strong></div>
             <div>Country: <strong>India</strong></div>
+            <div>
+              Tax Type:{' '}
+              <strong style={{ color: isIntraState ? '#137333' : '#b06000' }}>
+                {isIntraState ? 'CGST + SGST (Intra-State)' : 'IGST (Inter-State)'}
+              </strong>
+            </div>
             <div>Nature of Transaction: <strong>Retail Sale (B2C)</strong></div>
             <div>Invoice Type: <strong>Original for Recipient</strong></div>
           </div>
         </div>
       </div>
 
-      {/* ITEMS TABLE */}
+      {/* ══════════════ ITEMS TABLE (GST-compliant) ══════════════ */}
       <table style={{ width: '100%', borderCollapse: 'collapse', margin: '20px 0 16px' }}>
         <thead>
           <tr style={{ background: '#f3f0e9', borderBottom: '2px solid #d5cec0' }}>
-            <th style={{ padding: '10px 8px', textAlign: 'center', fontSize: '11px', fontWeight: 700, color: '#444', width: '36px' }}>#</th>
-            <th style={{ padding: '10px 8px', textAlign: 'left', fontSize: '11px', fontWeight: 700, color: '#444' }}>Description of Goods</th>
-            <th style={{ padding: '10px 8px', textAlign: 'center', fontSize: '11px', fontWeight: 700, color: '#444', width: '80px' }}>HSN</th>
-            <th style={{ padding: '10px 8px', textAlign: 'center', fontSize: '11px', fontWeight: 700, color: '#444', width: '48px' }}>Qty</th>
-            <th style={{ padding: '10px 8px', textAlign: 'right', fontSize: '11px', fontWeight: 700, color: '#444', width: '100px' }}>Unit Rate</th>
-            <th style={{ padding: '10px 8px', textAlign: 'right', fontSize: '11px', fontWeight: 700, color: '#444', width: '110px' }}>Amount (₹)</th>
+            <th style={{ ...thStyle, width: '30px' }}>#</th>
+            <th style={{ ...thStyle, textAlign: 'left' }}>Description of Goods</th>
+            <th style={{ ...thStyle, width: '60px' }}>HSN</th>
+            <th style={{ ...thStyle, width: '36px' }}>Qty</th>
+            <th style={{ ...thStyle, width: '80px', textAlign: 'right' }}>Rate (₹)</th>
+            <th style={{ ...thStyle, width: '90px', textAlign: 'right' }}>Taxable Value</th>
+            <th style={{ ...thStyle, width: '60px' }}>GST %</th>
+            <th style={{ ...thStyle, width: '80px', textAlign: 'right' }}>GST Amt</th>
+            <th style={{ ...thStyle, width: '90px', textAlign: 'right' }}>Total (₹)</th>
           </tr>
         </thead>
         <tbody>
-          {order.items?.map((item, index) => {
-            const lineTotal = item.price * item.quantity;
-            return (
-              <tr key={index} style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: '12px 8px', textAlign: 'center', color: '#777', fontSize: '12px' }}>
-                  {index + 1}
-                </td>
-                <td style={{ padding: '12px 8px' }}>
-                  <div style={{ fontWeight: 700, fontSize: '13px', color: '#1a1a1a' }}>{item.name}</div>
-                  <div style={{ fontSize: '11px', color: '#666', marginTop: '2px', display: 'flex', gap: '8px' }}>
-                    {item.size && <span>Size: <strong>{item.size}</strong></span>}
-                    {item.color && <span>Color: <strong>{item.color}</strong></span>}
-                  </div>
-                </td>
-                <td style={{ padding: '12px 8px', textAlign: 'center', fontSize: '12px', color: '#666' }}>
-                  6204
-                </td>
-                <td style={{ padding: '12px 8px', textAlign: 'center', fontWeight: 700, fontSize: '13px' }}>
-                  {item.quantity}
-                </td>
-                <td style={{ padding: '12px 8px', textAlign: 'right', fontSize: '12px', color: '#444' }}>
-                  ₹{item.price?.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </td>
-                <td style={{ padding: '12px 8px', textAlign: 'right', fontWeight: 700, fontSize: '13px', color: '#1a1a1a' }}>
-                  ₹{lineTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </td>
-              </tr>
-            );
-          })}
+          {itemsWithGST.map((item, index) => (
+            <tr key={index} style={{ borderBottom: '1px solid #eee' }}>
+              <td style={{ padding: '10px 6px', textAlign: 'center', color: '#777', fontSize: '12px' }}>
+                {index + 1}
+              </td>
+              <td style={{ padding: '10px 6px' }}>
+                <div style={{ fontWeight: 700, fontSize: '12px', color: '#1a1a1a' }}>{item.name}</div>
+                <div style={{ fontSize: '10px', color: '#666', marginTop: '2px', display: 'flex', gap: '8px' }}>
+                  {item.size && <span>Size: <strong>{item.size}</strong></span>}
+                  {item.color && <span>Color: <strong>{item.color}</strong></span>}
+                </div>
+              </td>
+              <td style={{ padding: '10px 6px', textAlign: 'center', fontSize: '11px', color: '#666' }}>
+                {item.hsn || '6204'}
+              </td>
+              <td style={{ padding: '10px 6px', textAlign: 'center', fontWeight: 700, fontSize: '12px' }}>
+                {item.quantity}
+              </td>
+              <td style={{ padding: '10px 6px', textAlign: 'right', fontSize: '11px', color: '#444' }}>
+                ₹{fmt(item.taxableValue / item.quantity)}
+              </td>
+              <td style={{ padding: '10px 6px', textAlign: 'right', fontSize: '12px', fontWeight: 600, color: '#333' }}>
+                ₹{fmt(item.taxableValue)}
+              </td>
+              <td style={{ padding: '10px 6px', textAlign: 'center', fontSize: '11px', color: '#666' }}>
+                {item.gstRate}%
+              </td>
+              <td style={{ padding: '10px 6px', textAlign: 'right', fontSize: '11px', color: '#c95d3c', fontWeight: 600 }}>
+                ₹{fmt(item.gstAmount)}
+              </td>
+              <td style={{ padding: '10px 6px', textAlign: 'right', fontWeight: 700, fontSize: '12px', color: '#1a1a1a' }}>
+                ₹{fmt(item.lineTotal)}
+              </td>
+            </tr>
+          ))}
+          {/* Items total row */}
+          <tr style={{ background: '#faf8f4', borderTop: '1.5px solid #d5cec0' }}>
+            <td colSpan={5} style={{ padding: '8px 6px', textAlign: 'right', fontWeight: 700, fontSize: '11px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Items Total
+            </td>
+            <td style={{ padding: '8px 6px', textAlign: 'right', fontWeight: 700, fontSize: '12px', color: '#1a1a1a' }}>
+              ₹{fmt(totalTaxableValue)}
+            </td>
+            <td style={{ padding: '8px 6px' }}></td>
+            <td style={{ padding: '8px 6px', textAlign: 'right', fontWeight: 700, fontSize: '12px', color: '#c95d3c' }}>
+              ₹{fmt(totalItemGST)}
+            </td>
+            <td style={{ padding: '8px 6px', textAlign: 'right', fontWeight: 800, fontSize: '13px', color: '#1a1a1a' }}>
+              ₹{fmt(totalTaxableValue + totalItemGST)}
+            </td>
+          </tr>
         </tbody>
       </table>
 
-      {/* SUMMARY SECTION */}
+      {/* ══════════════ GST SUMMARY + GRAND TOTAL ══════════════ */}
       <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '20px', marginTop: '10px' }}>
-        {/* Left Column: Words & Payment Note */}
+        {/* Left Column: Amount in Words & Payment Info */}
         <div>
           <div style={{ background: '#fdfbf7', padding: '12px 16px', borderRadius: '6px', border: '1px solid #ebe6dd', marginBottom: '14px' }}>
             <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#8c593b', marginBottom: '2px' }}>
@@ -315,6 +435,75 @@ export default function OrderInvoice({ order, onClose, isStandalone = false }: O
             </div>
           </div>
 
+          {/* HSN-wise Tax Summary Table */}
+          <div style={{ marginBottom: '14px' }}>
+            <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#8c593b', marginBottom: '6px', padding: '0 4px' }}>
+              GST BREAKUP (HSN-WISE)
+            </div>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
+              <thead>
+                <tr style={{ background: '#f3f0e9', borderBottom: '1px solid #d5cec0' }}>
+                  <th style={{ padding: '6px 8px', textAlign: 'left', fontWeight: 700, fontSize: '10px', color: '#555' }}>HSN</th>
+                  <th style={{ padding: '6px 8px', textAlign: 'right', fontWeight: 700, fontSize: '10px', color: '#555' }}>Taxable (₹)</th>
+                  {isIntraState ? (
+                    <>
+                      <th style={{ padding: '6px 8px', textAlign: 'right', fontWeight: 700, fontSize: '10px', color: '#555' }}>CGST</th>
+                      <th style={{ padding: '6px 8px', textAlign: 'right', fontWeight: 700, fontSize: '10px', color: '#555' }}>SGST</th>
+                    </>
+                  ) : (
+                    <th style={{ padding: '6px 8px', textAlign: 'right', fontWeight: 700, fontSize: '10px', color: '#555' }}>IGST</th>
+                  )}
+                  <th style={{ padding: '6px 8px', textAlign: 'right', fontWeight: 700, fontSize: '10px', color: '#555' }}>Total Tax</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(gstByRate).map(([rate, data]) => (
+                  <tr key={rate} style={{ borderBottom: '1px solid #eee' }}>
+                    <td style={{ padding: '5px 8px', color: '#555' }}>6204</td>
+                    <td style={{ padding: '5px 8px', textAlign: 'right', fontWeight: 600 }}>₹{fmt(data.taxable)}</td>
+                    {isIntraState ? (
+                      <>
+                        <td style={{ padding: '5px 8px', textAlign: 'right', color: '#555' }}>
+                          ₹{fmt(data.gst / 2)} <span style={{ fontSize: '9px', color: '#999' }}>@{Number(rate) / 2}%</span>
+                        </td>
+                        <td style={{ padding: '5px 8px', textAlign: 'right', color: '#555' }}>
+                          ₹{fmt(data.gst / 2)} <span style={{ fontSize: '9px', color: '#999' }}>@{Number(rate) / 2}%</span>
+                        </td>
+                      </>
+                    ) : (
+                      <td style={{ padding: '5px 8px', textAlign: 'right', color: '#555' }}>
+                        ₹{fmt(data.gst)} <span style={{ fontSize: '9px', color: '#999' }}>@{rate}%</span>
+                      </td>
+                    )}
+                    <td style={{ padding: '5px 8px', textAlign: 'right', fontWeight: 700 }}>₹{fmt(data.gst)}</td>
+                  </tr>
+                ))}
+                {/* Shipping GST row in breakup table */}
+                {shippingAmount > 0 && (
+                  <tr style={{ borderBottom: '1px solid #eee' }}>
+                    <td style={{ padding: '5px 8px', color: '#555', fontStyle: 'italic' }}>9965<br /><span style={{ fontSize: '9px' }}>(Shipping)</span></td>
+                    <td style={{ padding: '5px 8px', textAlign: 'right', fontWeight: 600 }}>₹{fmt(shippingTaxable)}</td>
+                    {isIntraState ? (
+                      <>
+                        <td style={{ padding: '5px 8px', textAlign: 'right', color: '#555' }}>
+                          ₹{fmt(shippingGST / 2)} <span style={{ fontSize: '9px', color: '#999' }}>@{SHIPPING_GST_RATE / 2}%</span>
+                        </td>
+                        <td style={{ padding: '5px 8px', textAlign: 'right', color: '#555' }}>
+                          ₹{fmt(shippingGST / 2)} <span style={{ fontSize: '9px', color: '#999' }}>@{SHIPPING_GST_RATE / 2}%</span>
+                        </td>
+                      </>
+                    ) : (
+                      <td style={{ padding: '5px 8px', textAlign: 'right', color: '#555' }}>
+                        ₹{fmt(shippingGST)} <span style={{ fontSize: '9px', color: '#999' }}>@{SHIPPING_GST_RATE}%</span>
+                      </td>
+                    )}
+                    <td style={{ padding: '5px 8px', textAlign: 'right', fontWeight: 700 }}>₹{fmt(shippingGST)}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
           <div style={{ fontSize: '11px', color: '#666', lineHeight: 1.5, padding: '4px' }}>
             <div style={{ fontWeight: 700, color: '#444', marginBottom: '2px' }}>Payment Information:</div>
             <div>Mode: <strong>{order.payment_method?.toUpperCase()}</strong></div>
@@ -323,34 +512,105 @@ export default function OrderInvoice({ order, onClose, isStandalone = false }: O
           </div>
         </div>
 
-        {/* Right Column: Totals Breakdown */}
+        {/* Right Column: Grand Total Breakdown */}
         <div>
+          <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#8c593b', marginBottom: '6px' }}>
+            INVOICE SUMMARY
+          </div>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
             <tbody>
               <tr>
-                <td style={{ padding: '6px 8px', color: '#666' }}>Items Subtotal:</td>
+                <td style={{ padding: '6px 8px', color: '#666' }}>Items Subtotal (Taxable):</td>
                 <td style={{ padding: '6px 8px', textAlign: 'right', fontWeight: 600 }}>
-                  ₹{order.subtotal?.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  ₹{fmt(totalTaxableValue)}
                 </td>
               </tr>
-              {discount > 0 && (
-                <tr>
-                  <td style={{ padding: '6px 8px', color: '#137333' }}>Discount / Coupon:</td>
-                  <td style={{ padding: '6px 8px', textAlign: 'right', fontWeight: 700, color: '#137333' }}>
-                    -₹{discount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </td>
-                </tr>
-              )}
+
+              {/* CGST / SGST or IGST rows per rate */}
+              {Object.entries(gstByRate).map(([rate, data]) => {
+                if (isIntraState) {
+                  const halfRate = Number(rate) / 2;
+                  const halfGst = data.gst / 2;
+                  return (
+                    <React.Fragment key={rate}>
+                      <tr>
+                        <td style={{ padding: '4px 8px', color: '#555', fontSize: '12px' }}>
+                          CGST <span style={{ color: '#999', fontSize: '11px' }}>@{halfRate}%</span>:
+                        </td>
+                        <td style={{ padding: '4px 8px', textAlign: 'right', fontWeight: 600 }}>₹{fmt(halfGst)}</td>
+                      </tr>
+                      <tr>
+                        <td style={{ padding: '4px 8px', color: '#555', fontSize: '12px' }}>
+                          SGST <span style={{ color: '#999', fontSize: '11px' }}>@{halfRate}%</span>:
+                        </td>
+                        <td style={{ padding: '4px 8px', textAlign: 'right', fontWeight: 600 }}>₹{fmt(halfGst)}</td>
+                      </tr>
+                    </React.Fragment>
+                  );
+                } else {
+                  return (
+                    <tr key={rate}>
+                      <td style={{ padding: '4px 8px', color: '#555', fontSize: '12px' }}>
+                        IGST <span style={{ color: '#999', fontSize: '11px' }}>@{rate}%</span>:
+                      </td>
+                      <td style={{ padding: '4px 8px', textAlign: 'right', fontWeight: 600 }}>₹{fmt(data.gst)}</td>
+                    </tr>
+                  );
+                }
+              })}
+
+              {/* Separator before shipping */}
+              <tr><td colSpan={2} style={{ padding: '2px 0' }}><div style={{ borderBottom: '1px dashed #ddd' }} /></td></tr>
+
+              {/* Shipping & Handling + GST */}
               <tr>
                 <td style={{ padding: '6px 8px', color: '#666' }}>Shipping & Handling:</td>
                 <td style={{ padding: '6px 8px', textAlign: 'right', fontWeight: 600 }}>
-                  {order.shipping === 0 ? 'FREE' : `₹${order.shipping.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                  {shippingAmount === 0 ? (
+                    <span style={{ color: '#137333', fontWeight: 700 }}>FREE</span>
+                  ) : (
+                    `₹${fmt(shippingTaxable)}`
+                  )}
                 </td>
               </tr>
+              {shippingAmount > 0 && (
+                <tr>
+                  <td style={{ padding: '4px 8px', color: '#555', fontSize: '12px' }}>
+                    {isIntraState ? (
+                      <>Shipping GST <span style={{ color: '#999', fontSize: '10px' }}>(CGST {SHIPPING_GST_RATE / 2}% + SGST {SHIPPING_GST_RATE / 2}%)</span>:</>
+                    ) : (
+                      <>Shipping IGST <span style={{ color: '#999', fontSize: '10px' }}>@{SHIPPING_GST_RATE}%</span>:</>
+                    )}
+                  </td>
+                  <td style={{ padding: '4px 8px', textAlign: 'right', fontWeight: 600, color: '#c95d3c' }}>
+                    ₹{fmt(shippingGST)}
+                  </td>
+                </tr>
+              )}
+
+              {/* Discount row */}
+              {discount > 0 && (
+                <>
+                  <tr><td colSpan={2} style={{ padding: '2px 0' }}><div style={{ borderBottom: '1px dashed #ddd' }} /></td></tr>
+                  <tr>
+                    <td style={{ padding: '6px 8px', color: '#137333' }}>Discount / Coupon:</td>
+                    <td style={{ padding: '6px 8px', textAlign: 'right', fontWeight: 700, color: '#137333' }}>
+                      -₹{fmt(discount)}
+                    </td>
+                  </tr>
+                </>
+              )}
+
+              {/* ── GRAND TOTAL ── */}
               <tr style={{ borderTop: '2px solid #1a1a1a', borderBottom: '2px solid #1a1a1a', background: '#fdfbf7' }}>
-                <td style={{ padding: '10px 8px', fontWeight: 800, fontSize: '14px', color: '#1a1a1a' }}>TOTAL AMOUNT:</td>
+                <td style={{ padding: '10px 8px', fontWeight: 800, fontSize: '14px', color: '#1a1a1a' }}>GRAND TOTAL:</td>
                 <td style={{ padding: '10px 8px', textAlign: 'right', fontWeight: 800, fontSize: '16px', color: '#c95d3c' }}>
-                  ₹{order.total?.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  ₹{fmt(order.total)}
+                </td>
+              </tr>
+              <tr>
+                <td colSpan={2} style={{ padding: '4px 8px', fontSize: '10px', color: '#888', textAlign: 'right' }}>
+                  (Incl. GST of ₹{fmt(grandTotalGST)})
                 </td>
               </tr>
             </tbody>
@@ -358,13 +618,14 @@ export default function OrderInvoice({ order, onClose, isStandalone = false }: O
         </div>
       </div>
 
-      {/* FOOTER & SIGNATURE */}
+      {/* ══════════════ FOOTER & SIGNATURE ══════════════ */}
       <div style={{ marginTop: '36px', paddingTop: '16px', borderTop: '1px solid #e0ddd5', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <div style={{ fontSize: '10px', color: '#777', maxWidth: '420px', lineHeight: 1.4 }}>
           <div style={{ fontWeight: 700, marginBottom: '2px', color: '#555' }}>Terms & Conditions:</div>
           <div>1. Goods sold are subject to standard return/exchange policies of Sanjpriya Creations.</div>
           <div>2. All disputes are subject to Mumbai jurisdiction only.</div>
           <div>3. This is a computer-generated tax invoice and requires no physical signature.</div>
+          <div>4. Tax is payable under Reverse Charge: <strong>No</strong></div>
         </div>
 
         <div style={{ textAlign: 'center', minWidth: '180px' }}>
@@ -379,6 +640,9 @@ export default function OrderInvoice({ order, onClose, isStandalone = false }: O
     </div>
   );
 
+  // ────────────────────────────────────────────────────────────────
+  // STANDALONE VIEW
+  // ────────────────────────────────────────────────────────────────
   if (isStandalone) {
     return (
       <div style={{ minHeight: '100vh', background: '#f5f4f0', padding: '30px 20px' }}>
@@ -463,7 +727,9 @@ export default function OrderInvoice({ order, onClose, isStandalone = false }: O
     );
   }
 
-  // Modal View
+  // ────────────────────────────────────────────────────────────────
+  // MODAL VIEW
+  // ────────────────────────────────────────────────────────────────
   return (
     <div
       style={{
